@@ -1,2 +1,3 @@
 auth_token.txt
 client_secret.txt
+.venv/*
