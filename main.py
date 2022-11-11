@@ -6,6 +6,10 @@ import discord
 from discord import *
 from discord.ext import commands
 
+import json
+
+from reply import ReplyTrigger
+
 description = """
 An example bot to showcase the discord.ext.commands extension module.
 There are a number of utility commands being showcased here.
@@ -48,20 +52,37 @@ async def on_message(message: Message):
         return
     
     if (message.type in (MessageType.default, MessageType.reply)):
-        await doReactions(message)
+        await doReply(message)
 
+async def doReply(message: Message):
 
-async def doReactions(message: Message):
-
-    if ('vote' in message.content.lower()):
-        await message.reply('I love democracy')
-        return
-    if ('linux' in message.content.lower() and 'gnu' not in message.content.lower()):
-        await message.reply('Did you mean GNU Linux?')
+    for trigger in triggers:
+        if (trigger.isTriggered(message.content)):
+            await message.reply(trigger.reply)
+            return
 
 
 
 with open('auth_token.txt') as f:
     auth_token = f.readline()
 
+with open('replies.json') as f:
+    replies = json.load(f)
+
+reply: dict
+
+triggers: tuple[ReplyTrigger] = []
+
+for reply in replies:
+    if (reply['type'] == 'text'):
+        
+        triggers = [
+            ReplyTrigger(
+                reply['type'],
+                reply['triggers'],
+                reply['reply'],
+                exceptTriggers=reply.get('exceptTriggers', [])
+            )
+        ]
+        
 bot.run(auth_token)
