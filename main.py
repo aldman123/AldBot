@@ -2,7 +2,7 @@
 # and the 'message_content' privileged intent for prefixed commands.
 
 import random
-
+import requests
 import discord
 from discord.ext import commands
 
@@ -30,6 +30,16 @@ async def on_ready():
 @bot.slash_command(name='ping', )
 async def hello(ctx):
     await ctx.respond("pong")
+
+@bot.slash_command(name='getcat', description="Get a random cat image!", )
+async def getcat(ctx):
+    raw = requests.get('https://api.thecatapi.com/v1/images/search')
+    cat_resp = raw.json()
+    if cat_resp[0].get('url'):
+        resp = cat_resp[0].get('url')
+    else:
+        resp = "I was unable to catch the cat for a picture... Try again later"
+    await ctx.respond(resp)
 
 
 with open('auth_token.txt') as f:
