@@ -26,10 +26,15 @@ bot = commands.Bot(
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(853108688730587146)
+    embed=discord.Embed(title="Welcome!",description=f"{member.mention} Just Joined")
+    await channel.send(embed=embed)
 
-@bot.slash_command(name='ping', )
-async def hello(ctx):
-    await ctx.respond("pong")
+# @bot.slash_command(name='ping', )
+# async def hello(ctx):
+#     await ctx.respond("pong")
 
 
 with open('auth_token.txt') as f:
