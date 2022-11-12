@@ -1,13 +1,18 @@
 [
     {
-        "type": "text",
+        "type": "image",
         "triggers": ["vote", "poll"],
-        "reply": "I love democracy"
+        "imageUrl": "https://i.kym-cdn.com/entries/icons/original/000/028/497/palp.jpg"
     },
     {
         "type": "text",
         "triggers": ["linux"],
         "exceptTriggers": ["gnu"],
         "reply": "Did you mean GNU Linux?"
+    },
+    {
+        "type": "text",
+        "triggers": ["sorry AldBot"],
+        "reply": "It's alright. I'm not mad :heart:"
     }
 ]

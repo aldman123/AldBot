@@ -2,13 +2,14 @@
 # and the 'message_content' privileged intent for prefixed commands.
 
 import requests
+
 import discord
 from discord import *
 from discord.ext import commands
 
 import json
 
-from reply import ReplyTrigger
+from reply import *
 
 description = """
 An example bot to showcase the discord.ext.commands extension module.
@@ -54,14 +55,29 @@ async def on_message(message: Message):
     if (message.type in (MessageType.default, MessageType.reply)):
         await doReply(message)
 
+'''
+    Checks a message for any trigger words, and if triggered it replies accordingly
+'''
 async def doReply(message: Message):
-
     for trigger in triggers:
         if (trigger.isTriggered(message.content)):
-            await message.reply(trigger.reply)
-            return
-
-
+            await trigger.doReply(message)
+'''
+    Parses json into ReplyTrigger subclasses
+'''
+def parseReplyConfig(reply: dict) -> ReplyTrigger:
+    if (reply['type'] == 'text'):
+        return TextReplyTrigger(
+            triggers=tuple(reply['triggers']),
+            reply=reply['reply'],
+            exceptTriggers=reply.get('exceptTriggers', ())
+        )
+    elif (reply['type'] == 'image'):
+        return ImageReplyTrigger(
+            triggers=tuple(reply['triggers']),
+            imageURL=reply['imageUrl'],
+            exceptTriggers=reply.get('exceptTriggers', ())
+        )
 
 with open('auth_token.txt') as f:
     auth_token = f.readline()
@@ -69,20 +85,6 @@ with open('auth_token.txt') as f:
 with open('replies.json') as f:
     replies = json.load(f)
 
-reply: dict
+triggers = list(map(parseReplyConfig, replies))
 
-triggers: tuple[ReplyTrigger] = []
-
-for reply in replies:
-    if (reply['type'] == 'text'):
-        
-        triggers = [
-            ReplyTrigger(
-                reply['type'],
-                reply['triggers'],
-                reply['reply'],
-                exceptTriggers=reply.get('exceptTriggers', [])
-            )
-        ]
-        
 bot.run(auth_token)
