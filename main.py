@@ -6,6 +6,7 @@ import random
 import discord
 from discord.ext import commands
 
+from role_picker import PronounView
 description = """
 An example bot to showcase the discord.ext.commands extension module.
 There are a number of utility commands being showcased here.
@@ -33,8 +34,7 @@ async def hello(ctx):
 
 @bot.slash_command(name='pickrole', )
 async def pickrole(ctx):
-    message = "what are your prnouns???"
-    await ctx.send_response("message", ephemeral=True)
+    await ctx.send_response("What are your pronouns? If we want to remove a pronoun role, click on one you already have. If you prefer not to say, just press done", view=PronounView(), ephemeral=True)
 
 with open('auth_token.txt') as f:
     auth_token = f.readline()
