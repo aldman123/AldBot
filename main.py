@@ -4,6 +4,7 @@
 import requests
 
 import discord
+from discord import *
 from discord.ext import commands
 
 import json
@@ -54,29 +55,28 @@ async def on_message(message: Message):
     if (message.type in (MessageType.default, MessageType.reply)):
         await doReply(message)
 
+'''
+    Checks a message for any trigger words, and if triggered it replies accordingly
+'''
 async def doReply(message: Message):
     for trigger in triggers:
         if (trigger.isTriggered(message.content)):
-            if (trigger is TextReplyTrigger):
-                await message.reply(trigger.reply)
-            elif (trigger is ImageReplyTrigger):
-                await message.reply(trigger.imageUrl)
-            else:
-                print('''ReplyTrigger {} wasn't a supported trigger''', trigger)
-            return
-
+            await trigger.doReply(message)
+'''
+    Parses json into ReplyTrigger subclasses
+'''
 def parseReplyConfig(reply: dict) -> ReplyTrigger:
     if (reply['type'] == 'text'):
         return TextReplyTrigger(
-            triggers=reply['triggers'],
+            triggers=tuple(reply['triggers']),
             reply=reply['reply'],
-            exceptTriggers=reply.get('exceptTriggers', [])
+            exceptTriggers=reply.get('exceptTriggers', ())
         )
     elif (reply['type'] == 'image'):
         return ImageReplyTrigger(
-            triggers=reply['triggers'],
+            triggers=tuple(reply['triggers']),
             imageURL=reply['imageUrl'],
-            exceptTriggers=reply.get('exceptTriggers', [])
+            exceptTriggers=reply.get('exceptTriggers', ())
         )
 
 with open('auth_token.txt') as f:
@@ -85,8 +85,6 @@ with open('auth_token.txt') as f:
 with open('replies.json') as f:
     replies = json.load(f)
 
-reply: dict
-
-triggers: list[ReplyTrigger] = map(parseReplyConfig, replies)
+triggers = list(map(parseReplyConfig, replies))
 
 bot.run(auth_token)
