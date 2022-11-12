@@ -7,6 +7,7 @@ import discord
 from discord import *
 from discord.ext import commands
 
+from role_picker import PronounView
 import json
 
 from reply import *
@@ -27,15 +28,17 @@ bot = commands.Bot(
     intents=intents,
 )
 
-
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
-
 @bot.slash_command(name='ping', )
 async def hello(ctx):
     await ctx.respond("pong")
+
+@bot.slash_command(name='pickrole', )
+async def pickrole(ctx):
+    await ctx.send_response("What are your pronouns? If we want to remove a pronoun role, click on one you already have. If you prefer not to say, just press done", view=PronounView(), ephemeral=True)
 
 @bot.slash_command(name='getcat', description="Get a random cat image!", )
 async def getcat(ctx):
