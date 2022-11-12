@@ -1,8 +1,8 @@
 [
     {
-        "type": "text",
+        "type": "image",
         "triggers": ["vote", "poll"],
-        "reply": "I love democracy"
+        "imageURL": "https://i.kym-cdn.com/entries/icons/original/000/028/497/palp.jpg"
     },
     {
         "type": "text",

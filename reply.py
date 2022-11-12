@@ -2,11 +2,9 @@ from discord import *
 
 class ReplyTrigger:
 
-    def __init__(self, type: str, triggers: tuple[str], reply: str, exceptTriggers: tuple[str] = []):
-        self.type = type
+    def __init__(self, triggers: tuple[str], exceptTriggers: tuple[str] = []):
         self.triggers = triggers
         self.exceptTriggers = exceptTriggers
-        self.reply = reply
 
     def isTriggered(self, messageContent: str) -> bool:
         messageContent = messageContent.lower()
@@ -21,3 +19,14 @@ class ReplyTrigger:
         return False
 
 
+class ImageReplyTrigger(ReplyTrigger):
+    def __init__(self, triggers: tuple[str], imageURL: str, exceptTriggers: tuple[str] = []):
+        super().__init__(type, triggers, exceptTriggers)
+        self.imageURL = imageURL
+
+class TextReplyTrigger(ReplyTrigger):
+    def __init__(self, triggers: tuple[str], reply: str, exceptTriggers: tuple[str] = []):
+        super().__init__(type, triggers, exceptTriggers)
+        self.reply = reply
+
+    
