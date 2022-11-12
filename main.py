@@ -1,12 +1,16 @@
 # This example requires the 'members' privileged intent to use the Member converter
 # and the 'message_content' privileged intent for prefixed commands.
 
-import random
-
+import requests
 import discord
+from discord import *
 from discord.ext import commands
 
 from role_picker import PronounView
+import json
+
+from reply import ReplyTrigger
+
 description = """
 An example bot to showcase the discord.ext.commands extension module.
 There are a number of utility commands being showcased here.
@@ -14,6 +18,7 @@ There are a number of utility commands being showcased here.
 
 intents = discord.Intents.default()
 intents.members = True
+intents.messages = True
 intents.message_content = True
 
 bot = commands.Bot(
@@ -36,7 +41,53 @@ async def hello(ctx):
 async def pickrole(ctx):
     await ctx.send_response("What are your pronouns? If we want to remove a pronoun role, click on one you already have. If you prefer not to say, just press done", view=PronounView(), ephemeral=True)
 
+@bot.slash_command(name='getcat', description="Get a random cat image!", )
+async def getcat(ctx):
+    raw = requests.get('https://api.thecatapi.com/v1/images/search')
+    cat_resp = raw.json()
+    if cat_resp[0].get('url'):
+        resp = cat_resp[0].get('url')
+    else:
+        resp = "I was unable to catch the cat for a picture... Try again later"
+    await ctx.respond(resp)
+
+@bot.event
+async def on_message(message: Message):
+    if message.author.id == bot.user.id:
+        return
+    
+    if (message.type in (MessageType.default, MessageType.reply)):
+        await doReply(message)
+
+async def doReply(message: Message):
+
+    for trigger in triggers:
+        if (trigger.isTriggered(message.content)):
+            await message.reply(trigger.reply)
+            return
+
+
+
 with open('auth_token.txt') as f:
     auth_token = f.readline()
 
+with open('replies.json') as f:
+    replies = json.load(f)
+
+reply: dict
+
+triggers: tuple[ReplyTrigger] = []
+
+for reply in replies:
+    if (reply['type'] == 'text'):
+        
+        triggers = [
+            ReplyTrigger(
+                reply['type'],
+                reply['triggers'],
+                reply['reply'],
+                exceptTriggers=reply.get('exceptTriggers', [])
+            )
+        ]
+        
 bot.run(auth_token)

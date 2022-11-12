@@ -1,0 +1,13 @@
+[
+    {
+        "type": "text",
+        "triggers": ["vote", "poll"],
+        "reply": "I love democracy"
+    },
+    {
+        "type": "text",
+        "triggers": ["linux"],
+        "exceptTriggers": ["gnu"],
+        "reply": "Did you mean GNU Linux?"
+    }
+]
