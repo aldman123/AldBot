@@ -44,7 +44,7 @@ class PronounView(discord.ui.View):
     @discord.ui.button(label="Next", row=2, style=discord.ButtonStyle.blurple)
     async def submit_button_callback(self, button, interaction):
         self.clear_items()
-        await interaction.response.edit_message(content="Do you want to have the 'AldCo Enthusiast' role? You will get pinged when the server does fun events like movies or online games. You can always run this command again if you change your mind.", view=EnthusiastView())
+        await interaction.response.edit_message(content="Do you want to have the 'AldCo Enthusiast' role? You will get pinged when the server does fun events like movies or online games.", view=EnthusiastView())
 
 
 class EnthusiastView(discord.ui.View):
