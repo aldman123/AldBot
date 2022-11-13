@@ -71,7 +71,7 @@ class EnthusiastView(discord.ui.View):
     @discord.ui.button(label="Next", row=1, style=discord.ButtonStyle.blurple)
     async def submit_button_callback(self, button, interaction):
         self.clear_items()
-        await interaction.response.edit_message(content="Last question. What do you believe the best circle constant is? If uncertain, you can just press done.", view=PiTauView())
+        await interaction.response.edit_message(content="What is the best circle constant?", view=PiTauView())
 
 class PiTauView(discord.ui.View):
     @discord.ui.button(label="π Pi", row=0, style=discord.ButtonStyle.blurple) 
