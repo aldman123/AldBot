@@ -2,7 +2,7 @@
 # and the 'message_content' privileged intent for prefixed commands.
 
 import requests
-
+import aiocron
 import discord
 from discord import *
 from discord.ext import commands
@@ -11,7 +11,10 @@ from role_picker import PronounView
 import json
 
 from reply import *
+from dotenv import load_dotenv
+import os 
 
+load_dotenv()
 description = """
 An example bot to showcase the discord.ext.commands extension module.
 There are a number of utility commands being showcased here.
@@ -31,6 +34,23 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
+
+@aiocron.crontab('0 12 * * 1,3,5')
+async def xkcd_commic():
+    channel = bot.get_channel(int(os.getenv('MATH_CHANNEL')))
+    raw = requests.get('https://xkcd.com/info.0.json')
+
+    resp_json = raw.json()
+    if resp_json.get('img') and resp_json.get('safe_title'):
+        resp = resp_json.get('safe_title') + " \n" + resp_json.get('img')
+    else:
+        resp = "I was unable to catch the comic... Try again later"
+    await channel.send(resp)
+
+@aiocron.crontab('0 8 * * 3')
+async def xkcd_commic():
+    channel = bot.get_channel(int(os.getenv('GAMES_CHANNEL')))
+    await channel.send("https://youtu.be/B_qnI1WrlnU")
 
 @bot.slash_command(name='ping', )
 async def hello(ctx):
