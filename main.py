@@ -35,6 +35,12 @@ bot = commands.Bot(
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(int(os.getenv('INTRO_CHANNEL')))
+    embed=discord.Embed(title="Welcome!",description=f"Hello {member.mention}! Please pick your roles by running the command `/pickrole`")
+    await channel.send(embed=embed)
+
 @aiocron.crontab('0 12 * * 1,3,5')
 async def xkcd_commic():
     channel = bot.get_channel(int(os.getenv('MATH_CHANNEL')))
