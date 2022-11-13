@@ -1,15 +1,11 @@
 # This example requires the 'members' privileged intent to use the Member converter
 # and the 'message_content' privileged intent for prefixed commands.
 
-import requests
+import requests, discord, json
 
-import discord
 from discord import *
 from discord.ext import commands
-
 from role_picker import PronounView
-import json
-
 from reply import *
 
 description = """
@@ -32,9 +28,9 @@ bot = commands.Bot(
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
-@bot.slash_command(name='ping', )
+@bot.slash_command(name='ping', description="Retrieve bot latency.", )
 async def hello(ctx):
-    await ctx.respond("pong")
+    await ctx.respond(f"pong, {bot.latency * 1000:.1f}ms latency")
 
 @bot.slash_command(name='pickrole', )
 async def pickrole(ctx):
@@ -65,6 +61,8 @@ async def doReply(message: Message):
     for trigger in triggers:
         if (trigger.isTriggered(message.content)):
             await trigger.doReply(message)
+            
+
 '''
     Parses json into ReplyTrigger subclasses
 '''
@@ -82,11 +80,8 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
             exceptTriggers=reply.get('exceptTriggers', ())
         )
 
-with open('auth_token.txt') as f:
-    auth_token = f.readline()
-
-with open('replies.json') as f:
-    replies = json.load(f)
+auth_token = open('auth_token.txt','r').readline()
+replies = json.load(open('replies.json','r'))
 
 triggers = list(map(parseReplyConfig, replies))
 
