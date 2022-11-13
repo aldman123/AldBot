@@ -38,7 +38,7 @@ async def hello(ctx):
 
 @bot.slash_command(name='pickrole', )
 async def pickrole(ctx):
-    await ctx.send_response("What are your pronouns? If we want to remove a pronoun role, click on one you already have. If you prefer not to say, just press done", view=PronounView(), ephemeral=True)
+    await ctx.send_response("What are your pronouns? If you want to remove a pronoun role, click on one you already have. If you prefer not to say or are happy with your pronoun roles press 'Next'", view=PronounView(), ephemeral=True)
 
 @bot.slash_command(name='getcat', description="Get a random cat image!", )
 async def getcat(ctx):
