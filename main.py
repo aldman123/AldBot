@@ -24,7 +24,7 @@ AUTH_TOKEN_FILE = 'auth_token.txt'
 VOTES_PER_DAY = 3
 
 VOTE_TRIGGERS = ['nice', 'good bot', 'good robot']
-
+NEGATIVE_VOTE_TRIGGERS = ['yikes', 'bad bot', 'bad robot', 'i hate you']
 
 load_dotenv()
 description = """
@@ -53,7 +53,10 @@ async def on_message(message: Message):
         return
     
     if (message.content.strip().lower() in VOTE_TRIGGERS):
-        await nice(message)
+        await vote(message, True)
+    
+    if (message.content.strip().lower() in NEGATIVE_VOTE_TRIGGERS):
+        await vote(message, False)
     
     if (message.type in (MessageType.default, MessageType.reply)):
         await doReply(message)
@@ -130,8 +133,6 @@ async def sendAldbuck(ctx: ApplicationContext, user: discord.User, quantity: int
     addAldBuck(reciever, quantity)
     await ctx.respond(f"<@{reciever}> just got {quantity} more AldBucks!\n<@{sender}> has {getAldBucks(sender)} remaining.")
     
-
-
 bot.add_application_command(aldbuckCommands)
 
 '''
@@ -160,9 +161,9 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
         )
 
 '''
-    Gives an AldBuck to the previous message's owner
+    Either adds or removes an AldBuck from user, and consumes a daily vote
 '''
-async def nice(message: Message):
+async def vote(message: Message, isPositive: bool):
 
     channel = message.channel
     messages = await channel.history(limit=100).flatten()
@@ -184,7 +185,10 @@ async def nice(message: Message):
         return
 
     useVote(voter)
-    addAldBuck(author, 1)
+    if isPositive:
+        addAldBuck(author, 1)
+    else:
+        addAldBuck(author, -1)
     await channel.send(f'Thank you for voting on <@{author}>.\nThey now have {getAldBucks(author)} AldBucks')
 
 '''
@@ -192,7 +196,8 @@ async def nice(message: Message):
 '''
 async def getTargetMessage(messages: list[Message]) -> Message:
     targetMessage = messages.pop()
-    if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() in VOTE_TRIGGERS:
+    content = targetMessage.content.strip().lower()
+    if targetMessage.author.id == bot.user.id or content in VOTE_TRIGGERS or content in NEGATIVE_VOTE_TRIGGERS:
         return await getTargetMessage(messages)
     else:
         return targetMessage
