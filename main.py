@@ -1,11 +1,13 @@
 # This example requires the 'members' privileged intent to use the Member converter
 # and the 'message_content' privileged intent for prefixed commands.
 
-import requests
-import aiocron
 import discord
 from discord import *
 from discord.ext import commands
+
+import requests
+import aiocron
+from datetime import datetime, timedelta
 
 from role_picker import PronounView
 import json
@@ -115,20 +117,27 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
     Gives an AldBuck to the previous message's owner
 '''
 async def nice(message: Message):
-    # targetMessage = await getTargetMessage(message)
-    targetMessage = message
-    author = message.author.id
+
+    yesterday = datetime.now() - timedelta(hours=1)
+    messages = await message.channel.history(limit=10).flatten()
+    messages = sorted(messages, key=lambda m: m.created_at)
+
+    print(list(map(lambda m: m.content, messages)))
+
+    targetMessage = await getTargetMessage(messages)
+
+    author = targetMessage.author.id
     addAldBuck(author, 1)
     await message.channel.send('Thank you for voting on <@{}>.\nThey now have {} AldBucks'.format(author, getAldBucks(author)))
 
-# '''
-#     When a user 
-# '''
-# async def getTargetMessage(message: Message, currentIndex=0) -> Message:
-#     channel = message.channel
-#     targetMessage = (await channel.history(limit=currentIndex + 1).flatten())[-1]
-#     if targetMessage.author.id == bot.user.id:
-#         await nice(targetMessage)
+async def getTargetMessage(messages: list[Message]) -> Message:
+    targetMessage = messages.pop()
+    print('Is target message {}?'.format(targetMessage.content))
+
+    if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() == 'nice':
+        return await getTargetMessage(messages)
+    else:
+        return targetMessage
 
 def addAldBuck(userId: int, quantity: int):
     if userId not in aldbucks:
