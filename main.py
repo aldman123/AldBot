@@ -240,8 +240,6 @@ except:
     dailyUses = {'day': getToday(), 'votes': {}}
     with open(DAILY_RESOURCE_FILE, 'a') as f:
         json.dump(dailyUses, f, default=str)
-
-
 triggers = list(map(parseReplyConfig, replies))
 
 bot.run(auth_token)
