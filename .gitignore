@@ -1,5 +1,7 @@
 auth_token.txt
 client_secret.txt
+aldbucks.json
+daily-resources.json
 .venv/*
 __pycache__/*
 .env
