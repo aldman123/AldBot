@@ -23,6 +23,8 @@ AUTH_TOKEN_FILE = 'auth_token.txt'
 
 VOTES_PER_DAY = 3
 
+VOTE_TRIGGERS = ['nice', 'good bot', 'good robot']
+
 
 load_dotenv()
 description = """
@@ -50,7 +52,7 @@ async def on_message(message: Message):
     if message.author.id == bot.user.id:
         return
     
-    if (message.content.strip().lower() == 'nice'):
+    if (message.content.strip().lower() in VOTE_TRIGGERS):
         await nice(message)
     
     if (message.type in (MessageType.default, MessageType.reply)):
@@ -110,6 +112,26 @@ async def printUsersAldbucks(ctx: ApplicationContext, user: discord.User=None):
     author = user.id
     await ctx.respond(f'<@{author}> currently has {getAldBucks(author)} AldBucks')
 
+@aldbuckCommands.command(name='send', description="Send AldBucks to another user")
+async def sendAldbuck(ctx: ApplicationContext, user: discord.User, quantity: int):
+    sender = ctx.author.id
+    reciever = user.id
+
+    if sender == reciever:
+        await ctx.respond(f"<@{sender}> You can't send yourself AldBucks!")
+        return
+    
+    senderBalance = getAldBucks(sender)
+    if quantity > senderBalance:
+        await ctx.respond(f"<@{sender}> You can't send {quantity} AldBucks to <@{reciever}>!\nYou only have {senderBalance} AldBucks")
+        return
+    
+    addAldBuck(sender, -1 * quantity)
+    addAldBuck(reciever, quantity)
+    await ctx.respond(f"<@{reciever}> just got {quantity} more AldBucks!\n<@{sender}> has {getAldBucks(sender)} remaining.")
+    
+
+
 bot.add_application_command(aldbuckCommands)
 
 '''
@@ -166,11 +188,11 @@ async def nice(message: Message):
     await channel.send(f'Thank you for voting on <@{author}>.\nThey now have {getAldBucks(author)} AldBucks')
 
 '''
-    Get the most recent message that's not 'nice' or an AldBot message
+    Get the most recent message that's not in VOTE_TRIGGERS or an AldBot message
 '''
 async def getTargetMessage(messages: list[Message]) -> Message:
     targetMessage = messages.pop()
-    if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() == 'nice':
+    if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() in VOTE_TRIGGERS:
         return await getTargetMessage(messages)
     else:
         return targetMessage
@@ -193,23 +215,38 @@ def addAldBuck(userId: int, quantity: int):
 def getAldBucks(userId: int):
     return aldbucks.get(userId, 0)
 
+'''
+    Get's a user's daily vote balance
+'''
 def getVotes(userId: int) -> int:
     if dailyUses['day'] == getToday():
         votes: dict = dailyUses['votes']
         return votes.get(userId, VOTES_PER_DAY)
     else:
-        saveDailyUses()
+        resetDailyUses()
         return VOTES_PER_DAY
 
+'''
+    Reduces a user's votes by one
+'''
 def useVote(userId: int):
     currentVotes = getVotes(userId)
     dailyUses['votes'][userId] = currentVotes - 1
     saveDailyUses()
 
+'''
+    Saves the daily uses to the filesystem
+'''
 def saveDailyUses():
-    dailyUses['day'] = getToday()
     with open(DAILY_RESOURCE_FILE, 'w') as f:
         json.dump(dailyUses, f)
+
+'''
+    Resets everyone's daily resources
+'''
+def resetDailyUses():
+    dailyUses = {'day': getToday(), 'votes': {}}
+    saveDailyUses()
 
 
 def getToday() -> str:
