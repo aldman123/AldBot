@@ -35,7 +35,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    print(f"We have logged in as {bot.user}")
+    print(f"Logged in as {bot.user}")
 
 @bot.event
 async def on_message(message: Message):
@@ -118,32 +118,43 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
 '''
 async def nice(message: Message):
 
-    yesterday = datetime.now() - timedelta(hours=1)
-    messages = await message.channel.history(limit=10).flatten()
-    messages = sorted(messages, key=lambda m: m.created_at)
+    channel = message.channel
 
-    print(list(map(lambda m: m.content, messages)))
+    yesterday = datetime.now() - timedelta(hours=1)
+    messages = await channel.history(limit=10).flatten()
+    messages = sorted(messages, key=lambda m: m.created_at)
 
     targetMessage = await getTargetMessage(messages)
 
     author = targetMessage.author.id
+
+    if message.author.id == author:
+        await channel.send(f"<@{author}> You can't vote on yourself! You lose an AldBuck")
+        addAldBuck(author, -1)
+        return
+
     addAldBuck(author, 1)
-    await message.channel.send('Thank you for voting on <@{}>.\nThey now have {} AldBucks'.format(author, getAldBucks(author)))
+    await channel.send(f'Thank you for voting on <@{author}>.\nThey now have {getAldBucks(author)} AldBucks')
 
 async def getTargetMessage(messages: list[Message]) -> Message:
     targetMessage = messages.pop()
-    print('Is target message {}?'.format(targetMessage.content))
+    print(f'Is target message {targetMessage.content}?')
 
     if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() == 'nice':
         return await getTargetMessage(messages)
     else:
         return targetMessage
-
+'''
+    Add a quantity of AldBucks and then save the file
+'''
 def addAldBuck(userId: int, quantity: int):
     if userId not in aldbucks:
         aldbucks[userId] = 0
 
     aldbucks[userId] += quantity
+
+    with open('aldbucks.json', 'w') as f:
+        json.dump(aldbucks, f)
 
 def getAldBucks(userId: int):
     return aldbucks.get(userId, 0)
@@ -155,8 +166,10 @@ with open('auth_token.txt') as f:
 with open('replies.json') as f:
     replies = json.load(f)
 
-triggers = list(map(parseReplyConfig, replies))
-
 aldbucks: dict[str, int] = {}
+with open('aldbucks.json') as f:
+    aldbucks = json.load(f)
+
+triggers = list(map(parseReplyConfig, replies))
 
 bot.run(auth_token)
