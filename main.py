@@ -36,6 +36,17 @@ async def on_ready():
     print(f"We have logged in as {bot.user}")
 
 @bot.event
+async def on_message(message: Message):
+    if message.author.id == bot.user.id:
+        return
+    
+    if (message.content.strip().lower() == 'nice'):
+        await nice(message)
+    
+    if (message.type in (MessageType.default, MessageType.reply)):
+        await doReply(message)
+
+@bot.event
 async def on_member_join(member):
     channel = bot.get_channel(int(os.getenv('INTRO_CHANNEL')))
     embed=discord.Embed(title="Welcome!",description=f"Hello {member.mention}! Please pick your roles by running the command `/pickrole`")
@@ -59,7 +70,7 @@ async def xkcd_commic():
     await channel.send("https://youtu.be/B_qnI1WrlnU")
 
 @bot.slash_command(name='ping', )
-async def hello(ctx):
+async def ping(ctx):
     await ctx.respond("pong")
 
 @bot.slash_command(name='pickrole', )
@@ -75,14 +86,6 @@ async def getcat(ctx):
     else:
         resp = "I was unable to catch the cat for a picture... Try again later"
     await ctx.respond(resp)
-
-@bot.event
-async def on_message(message: Message):
-    if message.author.id == bot.user.id:
-        return
-    
-    if (message.type in (MessageType.default, MessageType.reply)):
-        await doReply(message)
 
 '''
     Checks a message for any trigger words, and if triggered it replies accordingly
@@ -107,6 +110,25 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
             imageURL=reply['imageUrl'],
             exceptTriggers=reply.get('exceptTriggers', ())
         )
+
+'''
+    Gives an AldBuck to the previous message's owner
+'''
+async def nice(message: Message):
+    # targetMessage = await getTargetMessage(message)
+    targetMessage = message
+    await message.channel.send('Thank you for voting on <@{}>. They now have {} AldBucks'.format(targetMessage.author.id, 69))
+
+# '''
+#     When a user 
+# '''
+# async def getTargetMessage(message: Message, currentIndex=0) -> Message:
+#     channel = message.channel
+#     targetMessage = (await channel.history(limit=currentIndex + 1).flatten())[-1]
+#     if targetMessage.author.id == bot.user.id:
+#         await nice(targetMessage)
+
+
 
 with open('auth_token.txt') as f:
     auth_token = f.readline()
