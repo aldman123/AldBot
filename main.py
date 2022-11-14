@@ -89,6 +89,11 @@ async def getcat(ctx):
         resp = "I was unable to catch the cat for a picture... Try again later"
     await ctx.respond(resp)
 
+@bot.slash_command(name='get-aldbucks', description="Returns a user's AldBuck balance")
+async def printUsersAldbucks(ctx: ApplicationContext):
+    author = ctx.author.id
+    await ctx.respond(f'<@{author}> currently has {getAldBucks(author)} AldBucks')
+
 '''
     Checks a message for any trigger words, and if triggered it replies accordingly
 '''
@@ -96,6 +101,7 @@ async def doReply(message: Message):
     for trigger in triggers:
         if (trigger.isTriggered(message.content)):
             await trigger.doReply(message)
+
 '''
     Parses json into ReplyTrigger subclasses
 '''
@@ -119,9 +125,7 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
 async def nice(message: Message):
 
     channel = message.channel
-
-    yesterday = datetime.now() - timedelta(hours=1)
-    messages = await channel.history(limit=10).flatten()
+    messages = await channel.history(limit=100).flatten()
     messages = sorted(messages, key=lambda m: m.created_at)
 
     targetMessage = await getTargetMessage(messages)
@@ -129,13 +133,16 @@ async def nice(message: Message):
     author = targetMessage.author.id
 
     if message.author.id == author:
-        await channel.send(f"<@{author}> You can't vote on yourself! You lose an AldBuck")
         addAldBuck(author, -1)
+        await channel.send(f"<@{author}> You can't vote on yourself! You lose an AldBuck and now have {getAldBucks(author)}")
         return
 
     addAldBuck(author, 1)
     await channel.send(f'Thank you for voting on <@{author}>.\nThey now have {getAldBucks(author)} AldBucks')
 
+'''
+    Get the most recent message that's not 'nice' or an AldBot message
+'''
 async def getTargetMessage(messages: list[Message]) -> Message:
     targetMessage = messages.pop()
     print(f'Is target message {targetMessage.content}?')
@@ -144,6 +151,7 @@ async def getTargetMessage(messages: list[Message]) -> Message:
         return await getTargetMessage(messages)
     else:
         return targetMessage
+
 '''
     Add a quantity of AldBucks and then save the file
 '''
@@ -156,6 +164,9 @@ def addAldBuck(userId: int, quantity: int):
     with open('aldbucks.json', 'w') as f:
         json.dump(aldbucks, f)
 
+'''
+    Get's a user's AldBucks (defaults to zero)
+'''
 def getAldBucks(userId: int):
     return aldbucks.get(userId, 0)
 
