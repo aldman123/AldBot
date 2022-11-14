@@ -89,10 +89,20 @@ async def getcat(ctx):
         resp = "I was unable to catch the cat for a picture... Try again later"
     await ctx.respond(resp)
 
-@bot.slash_command(name='get-aldbucks', description="Returns a user's AldBuck balance")
-async def printUsersAldbucks(ctx: ApplicationContext):
-    author = ctx.author.id
+
+'''
+    AldBucks Commands
+'''
+aldbuckCommands = SlashCommandGroup(name='aldbucks', description='The hip new crypto currency AldBucks')
+
+@aldbuckCommands.command(name='get', description="Returns a user's AldBuck balance")
+async def printUsersAldbucks(ctx: ApplicationContext, user: discord.User=None):
+    if user is None:
+        user = ctx.user
+    author = user.id
     await ctx.respond(f'<@{author}> currently has {getAldBucks(author)} AldBucks')
+
+bot.add_application_command(aldbuckCommands)
 
 '''
     Checks a message for any trigger words, and if triggered it replies accordingly
@@ -145,8 +155,6 @@ async def nice(message: Message):
 '''
 async def getTargetMessage(messages: list[Message]) -> Message:
     targetMessage = messages.pop()
-    print(f'Is target message {targetMessage.content}?')
-
     if targetMessage.author.id == bot.user.id or targetMessage.content.strip().lower() == 'nice':
         return await getTargetMessage(messages)
     else:
