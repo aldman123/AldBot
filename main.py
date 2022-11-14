@@ -17,9 +17,11 @@ from dotenv import load_dotenv
 import os
 
 ALDBUCKS_FILE = 'aldbucks.json'
-
+DAILY_RESOURCE_FILE = 'daily-resources.json'
 REPLIES_FILE = 'replies.json'
 AUTH_TOKEN_FILE = 'auth_token.txt'
+
+VOTES_PER_DAY = 3
 
 
 load_dotenv()
@@ -152,7 +154,14 @@ async def nice(message: Message):
         addAldBuck(author, -1)
         await channel.send(f"<@{author}> You can't vote on yourself! You lose an AldBuck and now have {getAldBucks(author)}")
         return
+    
+    voter = message.author.id
+    remainingVotes = getVotes(voter)
+    if remainingVotes < 1:
+        await channel.send(f"<@{voter}>You've already used {VOTES_PER_DAY} votes today!")
+        return
 
+    useVote(voter)
     addAldBuck(author, 1)
     await channel.send(f'Thank you for voting on <@{author}>.\nThey now have {getAldBucks(author)} AldBucks')
 
@@ -184,6 +193,29 @@ def addAldBuck(userId: int, quantity: int):
 def getAldBucks(userId: int):
     return aldbucks.get(userId, 0)
 
+def getVotes(userId: int) -> int:
+    if dailyUses['day'] == getToday():
+        votes: dict = dailyUses['votes']
+        return votes.get(userId, VOTES_PER_DAY)
+    else:
+        saveDailyUses()
+        return VOTES_PER_DAY
+
+def useVote(userId: int):
+    currentVotes = getVotes(userId)
+    dailyUses['votes'][userId] = currentVotes - 1
+    saveDailyUses()
+
+def saveDailyUses():
+    dailyUses['day'] = getToday()
+    with open(DAILY_RESOURCE_FILE, 'w') as f:
+        json.dump(dailyUses, f)
+
+
+def getToday() -> str:
+    return str(datetime.today().date())
+
+
 
 with open(AUTH_TOKEN_FILE, 'r') as f:
     auth_token = f.readline()
@@ -196,10 +228,19 @@ try:
     with open(ALDBUCKS_FILE) as f:
         aldbucks = json.load(f)
 except:
-    print('No aldbucks.json file found. Creating an empty one')
     aldbucks = {}
     with open(ALDBUCKS_FILE, 'a') as f:
         json.dump(aldbucks, f)
+
+dailyUses: dict = {}
+try:
+    with open(DAILY_RESOURCE_FILE, 'r') as f:
+        dailyUses = json.load(f)
+except:
+    dailyUses = {'day': getToday(), 'votes': {}}
+    with open(DAILY_RESOURCE_FILE, 'a') as f:
+        json.dump(dailyUses, f, default=str)
+
 
 triggers = list(map(parseReplyConfig, replies))
 
