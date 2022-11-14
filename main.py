@@ -117,7 +117,9 @@ def parseReplyConfig(reply: dict) -> ReplyTrigger:
 async def nice(message: Message):
     # targetMessage = await getTargetMessage(message)
     targetMessage = message
-    await message.channel.send('Thank you for voting on <@{}>. They now have {} AldBucks'.format(targetMessage.author.id, 69))
+    author = message.author.id
+    addAldBuck(author, 1)
+    await message.channel.send('Thank you for voting on <@{}>.\nThey now have {} AldBucks'.format(author, getAldBucks(author)))
 
 # '''
 #     When a user 
@@ -128,6 +130,14 @@ async def nice(message: Message):
 #     if targetMessage.author.id == bot.user.id:
 #         await nice(targetMessage)
 
+def addAldBuck(userId: int, quantity: int):
+    if userId not in aldbucks:
+        aldbucks[userId] = 0
+
+    aldbucks[userId] += quantity
+
+def getAldBucks(userId: int):
+    return aldbucks.get(userId, 0)
 
 
 with open('auth_token.txt') as f:
@@ -137,5 +147,7 @@ with open('replies.json') as f:
     replies = json.load(f)
 
 triggers = list(map(parseReplyConfig, replies))
+
+aldbucks: dict[str, int] = {}
 
 bot.run(auth_token)
