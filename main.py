@@ -14,7 +14,13 @@ import json
 
 from reply import *
 from dotenv import load_dotenv
-import os 
+import os
+
+ALDBUCKS_FILE = 'aldbucks.json'
+
+REPLIES_FILE = 'replies.json'
+AUTH_TOKEN_FILE = 'auth_token.txt'
+
 
 load_dotenv()
 description = """
@@ -169,7 +175,7 @@ def addAldBuck(userId: int, quantity: int):
 
     aldbucks[userId] += quantity
 
-    with open('aldbucks.json', 'w') as f:
+    with open(ALDBUCKS_FILE, 'w') as f:
         json.dump(aldbucks, f)
 
 '''
@@ -179,15 +185,21 @@ def getAldBucks(userId: int):
     return aldbucks.get(userId, 0)
 
 
-with open('auth_token.txt') as f:
+with open(AUTH_TOKEN_FILE, 'r') as f:
     auth_token = f.readline()
 
-with open('replies.json') as f:
+with open(REPLIES_FILE, 'r') as f:
     replies = json.load(f)
 
 aldbucks: dict[str, int] = {}
-with open('aldbucks.json') as f:
-    aldbucks = json.load(f)
+try:
+    with open(ALDBUCKS_FILE) as f:
+        aldbucks = json.load(f)
+except:
+    print('No aldbucks.json file found. Creating an empty one')
+    aldbucks = {}
+    with open(ALDBUCKS_FILE, 'a') as f:
+        json.dump(aldbucks, f)
 
 triggers = list(map(parseReplyConfig, replies))
 
