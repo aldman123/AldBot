@@ -22,7 +22,7 @@ REPLIES_FILE = 'replies.json'
 AUTH_TOKEN_FILE = 'auth_token.txt'
 
 VOTES_PER_DAY = 3
-NEW_DAY_NEW_MEME = 1
+NEW_DAY_NEW_MEME = True
 VOTE_TRIGGERS = ['nice', 'good bot', 'good robot']
 NEGATIVE_VOTE_TRIGGERS = ['yikes', 'bad bot', 'bad robot', 'i hate you']
 
@@ -76,10 +76,10 @@ async def xkcd_commic():
     raw = requests.get('https://xkcd.com/info.0.json')
     resp_json = raw.json()
     
-    if new_day_new_meme and int(resp_json.get("day")) == date.today().day:
+    if NEW_DAY_NEW_MEME and int(resp_json.get("day")) == date.today().day:
         if resp_json.get('img') and resp_json.get('safe_title'):
             resp = resp_json.get('safe_title') + " \n" + resp_json.get('img')
-            NEW_DAY_NEW_MEME = 0
+            NEW_DAY_NEW_MEME = False
         else:
             resp = "I was unable to catch the comic... Try again later"
         await channel.send(resp)
@@ -89,7 +89,7 @@ Set NEW_DAY_NEW_MEME every day at midnight
 '''
 @aiocron.crontab('0 0 * * *')
 async def new_day_new_meme():
-    NEW_DAY_NEW_MEME = 1
+    NEW_DAY_NEW_MEME = True
 
 @bot.slash_command(name='ping', )
 async def ping(ctx):
