@@ -7,7 +7,7 @@ from discord.ext import commands
 
 import requests
 import aiocron
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from role_picker import PronounView
 import json
@@ -22,7 +22,7 @@ REPLIES_FILE = 'replies.json'
 AUTH_TOKEN_FILE = 'auth_token.txt'
 
 VOTES_PER_DAY = 3
-
+NEW_DAY_NEW_MEME = True
 VOTE_TRIGGERS = ['nice', 'good bot', 'good robot']
 NEGATIVE_VOTE_TRIGGERS = ['yikes', 'bad bot', 'bad robot', 'i hate you']
 
@@ -67,22 +67,29 @@ async def on_member_join(member):
     embed=discord.Embed(title="Welcome!",description=f"Hello {member.mention}! Please pick your roles by running the command `/pickrole`")
     await channel.send(embed=embed)
 
-@aiocron.crontab('0 12 * * 1,3,5')
+'''
+Every 2 hours on monday, wednesday, and friday check if there is a new xkcd comic matching todays date, if so post it
+'''
+@aiocron.crontab('0 */2 * * 1,3,5')
 async def xkcd_commic():
     channel = bot.get_channel(int(os.getenv('MATH_CHANNEL')))
     raw = requests.get('https://xkcd.com/info.0.json')
-
     resp_json = raw.json()
-    if resp_json.get('img') and resp_json.get('safe_title'):
-        resp = resp_json.get('safe_title') + " \n" + resp_json.get('img')
-    else:
-        resp = "I was unable to catch the comic... Try again later"
-    await channel.send(resp)
+    
+    if NEW_DAY_NEW_MEME and int(resp_json.get("day")) == date.today().day:
+        if resp_json.get('img') and resp_json.get('safe_title'):
+            resp = resp_json.get('safe_title') + " \n" + resp_json.get('img')
+            NEW_DAY_NEW_MEME = False
+        else:
+            resp = "I was unable to catch the comic... Try again later"
+        await channel.send(resp)
 
-@aiocron.crontab('0 8 * * 3')
-async def xkcd_commic():
-    channel = bot.get_channel(int(os.getenv('GAMES_CHANNEL')))
-    await channel.send("https://youtu.be/B_qnI1WrlnU")
+'''
+Set NEW_DAY_NEW_MEME every day at midnight
+'''
+@aiocron.crontab('0 0 * * *')
+async def new_day_new_meme():
+    NEW_DAY_NEW_MEME = True
 
 @bot.slash_command(name='ping', )
 async def ping(ctx):
