@@ -72,6 +72,7 @@ Every 2 hours on monday, wednesday, and friday check if there is a new xkcd comi
 '''
 @aiocron.crontab('0 */2 * * 1,3,5')
 async def xkcd_commic():
+    global NEW_DAY_NEW_MEME
     channel = bot.get_channel(int(os.getenv('MATH_CHANNEL')))
     raw = requests.get('https://xkcd.com/info.0.json')
     resp_json = raw.json()
@@ -89,6 +90,7 @@ Set NEW_DAY_NEW_MEME every day at midnight
 '''
 @aiocron.crontab('0 0 * * *')
 async def new_day_new_meme():
+    global NEW_DAY_NEW_MEME
     NEW_DAY_NEW_MEME = True
 
 @bot.slash_command(name='ping', )
