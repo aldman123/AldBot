@@ -5,6 +5,11 @@
         "imageUrl": "https://i.kym-cdn.com/entries/icons/original/000/028/497/palp.jpg"
     },
     {
+        "type": "image",
+        "triggers": ["i hate you"],
+        "imageUrl": "https://tenor.com/RCRW.gif"
+    },
+    {
         "type": "text",
         "triggers": ["linux"],
         "exceptTriggers": ["gnu"],
@@ -14,5 +19,15 @@
         "type": "text",
         "triggers": ["sorry AldBot"],
         "reply": "It's alright. I'm not mad :heart:"
+    },
+    {
+        "type": "text",
+        "triggers": ["yikes", "rizz", "gyat", "slaps", "cringe", "brain rot", "brat", "no cap", "cooked", "gigachad", "mogging", "gooning", "grinding", "deadass", "edging"],
+        "reply": "You got l-rizz with words like that gooner. Lay off the tiktok and go touch grass"
+    },
+    {
+        "type": "text",
+        "triggers": ["pi"],
+        "reply": "Don't you mean half tau?"
     }
 ]

@@ -14,9 +14,6 @@ from reply import ImageReplyTrigger, ReplyTrigger, TextReplyTrigger
 REPLIES_FILE = "replies.json"
 AUTH_TOKEN_FILE = "auth_token.txt"
 
-VOTE_TRIGGERS = ["nice", "good bot", "good robot"]
-NEGATIVE_VOTE_TRIGGERS = ["yikes", "bad bot", "bad robot", "i hate you"]
-
 load_dotenv()
 
 intents = discord.Intents.default()
@@ -127,12 +124,7 @@ async def getTargetMessage(messages: list[Message]) -> Message:
     Get the most recent message that's not in VOTE_TRIGGERS or an AldBot message
     """
     targetMessage = messages.pop()
-    content = targetMessage.content.strip().lower()
-    if (
-        targetMessage.author.id == bot.user.id
-        or content in VOTE_TRIGGERS
-        or content in NEGATIVE_VOTE_TRIGGERS
-    ):
+    if targetMessage.author.id == bot.user.id:
         return await getTargetMessage(messages)
     else:
         return targetMessage
