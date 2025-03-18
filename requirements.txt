@@ -3,3 +3,4 @@ requests==2.32.3
 aiocron==2.1
 python-dotenv==1.01
 Datetime==5.5
+xkcd==2.4.2

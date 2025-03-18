@@ -1,23 +1,19 @@
-# This example requires the 'members' privileged intent to use the Member converter
-# and the 'message_content' privileged intent for prefixed commands.
-
 import json
 import os
-from datetime import date
 
 import aiocron
 import discord
 import requests
+import xkcd
 from discord import Message, MessageType
 from discord.ext import commands
 from dotenv import load_dotenv
+
 from reply import ImageReplyTrigger, ReplyTrigger, TextReplyTrigger
 
 REPLIES_FILE = "replies.json"
 AUTH_TOKEN_FILE = "auth_token.txt"
 
-VOTES_PER_DAY = 3
-NEW_DAY_NEW_MEME = True
 VOTE_TRIGGERS = ["nice", "good bot", "good robot"]
 NEGATIVE_VOTE_TRIGGERS = ["yikes", "bad bot", "bad robot", "i hate you"]
 
@@ -29,7 +25,6 @@ intents.messages = True
 intents.message_content = True
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or("!"),
     description="AldBot is aldmost aldsome",
     intents=intents,
 )
@@ -37,6 +32,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
+    await post_xkcd_comic()
     print(f"Logged in as {bot.user}")
 
 
@@ -49,24 +45,24 @@ async def on_message(message: Message):
         await doReply(message)
 
 
+LAST_POSTED_XKCD = -1
+
+
 @aiocron.crontab("0 */2 * * 1,3,5")
-async def xkcd_commic():
-    """
-    Every 2 hours on monday, wednesday, and friday check if there is a new xkcd comic matching todays date, if so post it
-    """
+async def hourly_cron():
+    post_xkcd_comic()
 
-    global NEW_DAY_NEW_MEME
+
+async def post_xkcd_comic():
     channel = bot.get_channel(int(os.getenv("MATH_CHANNEL")))
-    raw = requests.get("https://xkcd.com/info.0.json")
-    resp_json = raw.json()
 
-    if NEW_DAY_NEW_MEME and int(resp_json.get("day")) == date.today().day:
-        if resp_json.get("img") and resp_json.get("safe_title"):
-            resp = resp_json.get("safe_title") + " \n" + resp_json.get("img")
-            NEW_DAY_NEW_MEME = False
-        else:
-            resp = "I was unable to catch the comic... Try again later"
-        await channel.send(resp)
+    last_message = await channel.history().find(lambda m: m.author.id == bot.user.id)
+
+    comic = xkcd.getLatestComic()
+    new_post = f"# [Lungfish]({comic.getImageLink()})\n||{comic.getAltText()}||"
+
+    if new_post != last_message.content:
+        await channel.send(content=new_post)
 
 
 @aiocron.crontab("0 0 * * *")
