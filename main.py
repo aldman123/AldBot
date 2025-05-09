@@ -56,7 +56,9 @@ async def post_xkcd_comic():
     last_message = await channel.history().find(lambda m: m.author.id == bot.user.id)
 
     comic = xkcd.getLatestComic()
-    new_post = f"# [Lungfish]({comic.getImageLink()})\n||{comic.getAltText()}||"
+    new_post = (
+        f"# [{comic.getTitle()}]({comic.getImageLink()})\n||{comic.getAltText()}||"
+    )
 
     if new_post != last_message.content:
         await channel.send(content=new_post)
