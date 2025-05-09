@@ -3,5 +3,5 @@ client_secret.txt
 aldbucks.json
 daily-resources.json
 .venv/*
-__pycache__/*
+*/__pycache__/*
 .env

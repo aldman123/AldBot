@@ -16,11 +16,11 @@ class ReplyTrigger:
         messageContent = messageContent.lower()
 
         for trigger in self.exceptTriggers:
-            if re.search(f"\b{trigger}\b", messageContent) is not None:
+            if re.search(f"\\b{trigger}\\b", messageContent) is not None:
                 return False
 
         for trigger in self.triggers:
-            if re.search(f"\b{trigger}\b", messageContent) is not None:
+            if re.search(f"\\b{trigger}\\b", messageContent) is not None:
                 return True
 
         return False

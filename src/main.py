@@ -9,7 +9,7 @@ from discord import Message, MessageType
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from reply import ImageReplyTrigger, ReplyTrigger, TextReplyTrigger
+from src.reply import ImageReplyTrigger, ReplyTrigger, TextReplyTrigger
 
 REPLIES_FILE = "replies.json"
 AUTH_TOKEN_FILE = "auth_token.txt"

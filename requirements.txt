@@ -4,3 +4,4 @@ aiocron==2.1
 python-dotenv==1.0.1
 Datetime==5.5
 xkcd==2.4.2
+pytest==8.3.5
